@@ -3,7 +3,7 @@ name: Node.js CI/CD Pipeline
 on:
   push:
     branches:
-      - main
+      - main  # Запуск при пуше в main
   pull_request:
     branches:
       - main
@@ -11,30 +11,47 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout репозиторий
+        uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '22.14.0'
+      - name: Установить Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-    - name: Install dependencies
-      run: npm install
+      - name: Установка зависимостей
+        run: npm install
 
-    - name: Run tests
-      run: npm test
+      - name: Запуск тестов
+        run: npm test
 
-    - name: Build Docker image
-      run: docker build -t my-app .
+      - name: Собрать Docker-образ
+        run: docker build -t my-app .
 
-    - name: Save Docker image
-      run: docker save my-app -o my-app.tar
+      - name: Сохранить образ в архив
+        run: docker save my-app -o my-app.tar
 
-    - name: Upload Docker image as artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: docker-image
-        path: my-app.tar
+      - name: Загружить артефакт (образ)
+        uses: actions/upload-artifact@v3
+        with:
+          name: docker-image
+          path: my-app.tar
+
+  deploy:
+    runs-on: self-hosted
+    needs: build
+    steps:
+      - name: Скачать образ
+        uses: actions/download-artifact@v3
+        with:
+          name: docker-image
+
+      - name: Загрузить Docker-образ
+        run: docker load -i my-app.tar
+
+      - name: Запустить контейнер
+        run: |
+          docker stop my-app || true
+          docker rm my-app || true
+          docker run -d --name my-app -p 3000:3000 my-app
