@@ -31,10 +31,12 @@ jobs:
       run: docker build -t my-app .
 
     - name: Save Docker image
-      run: docker save my-app -o my-app.tar
+      run: |
+        docker save my-app -o my-app.tar
+        ls -lh my-app.tar  # Проверяем, что файл существует
 
     - name: Upload Docker image as artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: docker-image
         path: my-app.tar
