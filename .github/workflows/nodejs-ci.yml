@@ -1,45 +1,26 @@
-name: Node.js CI/CD Pipeline
+name: Docker Image CI
 
 on:
   push:
     branches:
-      - main
-  pull_request:
-    branches:
-      - main
+      - main  # Укажите ветку, при пуше в которую будет запускаться pipeline
 
 jobs:
-  build:
-    runs-on: ubuntu-latest  # Эта задача выполняется на GitHub-хосте
+  build-and-push:
+    runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
-    - name: Install dependencies
-      run: npm install
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/43variant:latest .
 
-    - name: Build Docker image
-      run: docker build -t my-app .
-
-    - name: Save Docker image
-      run: docker save my-app -o my-app.tar
-
-
-  deploy:
-    runs-on: self-hosted  # Эта задача выполняется на self-hosted раннере
-
-    steps:
-    - name: Load Docker image
-      run: docker load -i my-app.tar
-
-    - name: Run Docker container
-      run: |
-        docker stop my-app || true
-        docker rm my-app || true
-        docker run -d --name my-app -p 3000:3000 my-app
+      - name: Push Docker image
+        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/43variant:latest
