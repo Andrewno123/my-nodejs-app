@@ -33,11 +33,6 @@ jobs:
     - name: Save Docker image
       run: docker save my-app -o my-app.tar
 
-    - name: Upload Docker image as artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: docker-image
-        path: my-app.tar
 
   deploy:
     runs-on: self-hosted  # Эта задача выполняется на self-hosted раннере
