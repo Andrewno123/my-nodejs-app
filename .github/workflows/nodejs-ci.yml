@@ -24,3 +24,6 @@ jobs:
 
       - name: Push Docker image
         run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/43variant:latest
+      - name: run conteiner
+        run: docker run -d -p 80:80 flaime690/43variant
+        
