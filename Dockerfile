@@ -1,5 +1,5 @@
 # Dockerfile
-FROM node:latest
+FROM node:20-slim
 
 # Создание директории приложения
 WORKDIR /usr/src/app
